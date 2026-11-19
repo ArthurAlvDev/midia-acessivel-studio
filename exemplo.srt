@@ -1,0 +1,24 @@
+1
+00:00:02,000 --> 00:00:05,400
+- Você viu o que aconteceu?
+- Não, cheguei agora.
+
+2
+00:00:06,000 --> 00:00:10,200
+A porta bateu forte e todo mundo se assustou no corredor do prédio.
+
+3
+00:00:15,000 --> 00:00:16,000
+[música tensa]
+
+4
+00:00:16,200 --> 00:00:22,800
+Ele explicou que o projeto precisava de mais tempo porque a equipe toda estava aprendendo uma ferramenta nova.
+
+5
+00:00:31,000 --> 00:00:33,500
+[música suave]
+
+6
+00:00:34,000 --> 00:00:36,000
+Vamos começar.

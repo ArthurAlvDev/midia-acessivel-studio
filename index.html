@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none';">
+  <title>Legenda &amp; Audiodescrição Viva — auditoria local de legendas</title>
+  <meta name="description" content="Ferramenta gratuita e 100% local para auditar legendas (.srt/.vtt), medir CPS e CPL, encontrar janelas para audiodescrição e gerar trilha .vtt e transcrição descritiva. Sem upload.">
+  <meta property="og:title" content="Legenda &amp; Audiodescrição Viva">
+  <meta property="og:description" content="Audite legendas, encontre pausas para audiodescrição e exporte .vtt — tudo no navegador, sem enviar arquivos.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232B2B6B'/%3E%3Crect x='6' y='18' width='20' height='9' rx='2' fill='%23FFF'/%3E%3Cpath d='M10 22h6M18 22h4' stroke='%232B2B6B' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="src/styles.css">
+  <script defer src="src/parser.js"></script>
+  <script defer src="src/audit.js"></script>
+  <script defer src="src/descriptions.js"></script>
+  <script defer src="src/audio.js"></script>
+  <script defer src="src/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Ir para o conteúdo</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">CC</span>
+      <div>
+        <h1>Legenda &amp; Audiodescrição Viva</h1>
+        <p class="tagline">Auditoria de legendas, pausas para audiodescrição e transcrição descritiva</p>
+      </div>
+    </div>
+    <span class="privacy">100% local · nada é enviado</span>
+  </header>
+
+  <main id="main">
+    <section class="card" aria-labelledby="load-title">
+      <h2 id="load-title">1. Carregar a legenda</h2>
+      <p class="muted">Aceita <code>.srt</code> e <code>.vtt</code>. O arquivo é lido no seu navegador e não sai do computador.</p>
+
+      <div class="grid-2">
+        <div>
+          <label for="file">Arquivo de legenda</label>
+          <input type="file" id="file" accept=".srt,.vtt,text/vtt,text/plain">
+          <p class="muted small">Ou cole o conteúdo abaixo:</p>
+          <label for="paste" class="sr-only">Conteúdo da legenda</label>
+          <textarea id="paste" rows="6" placeholder="1&#10;00:00:02,000 --> 00:00:05,400&#10;Texto da legenda"></textarea>
+          <div class="row">
+            <button type="button" id="btn-paste" class="primary">Analisar texto colado</button>
+            <button type="button" id="btn-sample" class="ghost">Usar exemplo</button>
+          </div>
+        </div>
+        <div>
+          <h3>Opcional: áudio do vídeo</h3>
+          <p class="muted small">Detecta silêncios reais para confirmar onde cabe a audiodescrição.</p>
+          <label for="audio">Arquivo de áudio</label>
+          <input type="file" id="audio" accept="audio/*">
+          <div id="audio-result" class="audio-result" hidden></div>
+        </div>
+      </div>
+
+      <p id="status" class="status" role="status" aria-live="polite" data-kind="info"></p>
+    </section>
+
+    <section id="results" hidden>
+      <section class="card" aria-labelledby="summary-title">
+        <h2 id="summary-title">2. Resumo</h2>
+        <div class="stats">
+          <div class="stat"><span class="value" id="stat-cues">–</span><span class="label">trechos</span></div>
+          <div class="stat"><span class="value" id="stat-duration">–</span><span class="label">duração coberta</span></div>
+          <div class="stat"><span class="value" id="stat-cps">–</span><span class="label">CPS médio</span></div>
+          <div class="stat"><span class="value" id="stat-issues">–</span><span class="label">erros / avisos</span></div>
+          <div class="stat"><span class="value" id="stat-score">–</span><span class="label">conformidade</span></div>
+        </div>
+        <div class="score-track" aria-hidden="true"><div id="score-bar" class="score-bar"></div></div>
+        <p class="muted small">CPS: caracteres por segundo (recomendado até 17, limite 20). CPL: caracteres por linha (recomendado até 42).</p>
+      </section>
+
+      <section class="card" aria-labelledby="issues-title">
+        <h2 id="issues-title">3. Achados da auditoria</h2>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Problemas encontrados por trecho</caption>
+            <thead>
+              <tr><th scope="col">Início</th><th scope="col">Trecho</th><th scope="col">Tipo</th><th scope="col">Regra</th><th scope="col">Detalhe</th></tr>
+            </thead>
+            <tbody id="issues-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="ad-title">
+        <h2 id="ad-title">4. Pausas para audiodescrição</h2>
+        <p class="muted">Intervalos de 3 s ou mais entre legendas. Escreva a descrição e pré-ouça com a voz do sistema.</p>
+        <div id="gaps-list" class="gaps"></div>
+      </section>
+
+      <section class="card" aria-labelledby="export-title">
+        <h2 id="export-title">5. Exportar</h2>
+        <div class="row wrap">
+          <button type="button" id="btn-report-md" class="primary">Relatório .md</button>
+          <button type="button" id="btn-report-json" class="ghost">Relatório .json</button>
+          <button type="button" id="btn-vtt" class="ghost">Trilha descriptions.vtt</button>
+          <button type="button" id="btn-transcript" class="ghost">Transcrição descritiva</button>
+          <button type="button" id="btn-copy" class="ghost">Copiar relatório</button>
+        </div>
+        <p class="muted small">A trilha <code>descriptions.vtt</code> é aceita por players que suportam <code>&lt;track kind="descriptions"&gt;</code>.</p>
+      </section>
+    </section>
+
+    <section class="card prose" aria-labelledby="help-title">
+      <h2 id="help-title">Como interpretar</h2>
+      <ul>
+        <li><strong>CPS alto:</strong> o texto passa rápido demais; divida o trecho ou aumente a duração.</li>
+        <li><strong>CPL alto:</strong> quebre a linha; o olho precisa voltar ao início.</li>
+        <li><strong>Janela de audiodescrição:</strong> espaço entre falas onde a descrição cabe sem cobrir o diálogo.</li>
+        <li><strong>Trilha .vtt:</strong> audiodescrição para players compatíveis; a transcrição descritiva serve para leitores de tela e busca.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>Feito para criadores, professores e equipes de comunicação pública. Código aberto, sem rastreamento.</p>
+    <p class="muted small">Made by OlacDev · <a href="https://olacdev.com/" rel="noopener">olacdev.com</a></p>
+  </footer>
+</body>
+</html>
