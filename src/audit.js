@@ -19,6 +19,7 @@
 
   const PRESETS = {
     standard: { ...LIMITS, label: 'Padrão WCAG / EBU' },
+    streaming: { ...LIMITS, cpsError: 20, cpsWarn: 17, cplError: 42, cplWarn: 38, maxLines: 2, label: 'Streaming (Netflix / Prime)' },
     ancine: { ...LIMITS, cpsError: 17, cpsWarn: 15, cplError: 42, cplWarn: 38, maxLines: 2, label: 'ANCINE (Cinema / TV)' },
     youtube: { ...LIMITS, cpsError: 22, cpsWarn: 19, cplError: 42, cplWarn: 38, maxLines: 2, label: 'YouTube' },
   };
