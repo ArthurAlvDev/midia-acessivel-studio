@@ -11,6 +11,7 @@
   <meta property="og:type" content="website">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232B2B6B'/%3E%3Crect x='6' y='18' width='20' height='9' rx='2' fill='%23FFF'/%3E%3Cpath d='M10 22h6M18 22h4' stroke='%232B2B6B' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="src/styles.css">
+  <script defer src="/_vercel/insights/script.js"></script>
   <script defer src="src/parser.js"></script>
   <script defer src="src/audit.js"></script>
   <script defer src="src/descriptions.js"></script>
@@ -44,16 +45,27 @@
           <label for="paste" class="sr-only">Conteúdo da legenda</label>
           <textarea id="paste" rows="6" placeholder="1&#10;00:00:02,000 --> 00:00:05,400&#10;Texto da legenda"></textarea>
           <div class="row">
+            <label for="preset-select">Preset de auditoria</label>
+            <select id="preset-select">
+              <option value="standard">Padrão WCAG / EBU</option>
+              <option value="ancine">ANCINE (Cinema / TV — até 17 CPS, 42 CPL)</option>
+              <option value="youtube">YouTube (até 22 CPS, 42 CPL)</option>
+            </select>
+          </div>
+          <div class="row">
             <button type="button" id="btn-paste" class="primary">Analisar texto colado</button>
             <button type="button" id="btn-sample" class="ghost">Usar exemplo</button>
           </div>
         </div>
         <div>
-          <h3>Opcional: áudio do vídeo</h3>
+          <h3>Opcional: áudio do vídeo e lote</h3>
           <p class="muted small">Detecta silêncios reais para confirmar onde cabe a audiodescrição.</p>
           <label for="audio">Arquivo de áudio</label>
           <input type="file" id="audio" accept="audio/*">
           <div id="audio-result" class="audio-result" hidden></div>
+          <label for="batch-subtitles">Preparar lote de legendas (.srt/.vtt)</label>
+          <input type="file" id="batch-subtitles" multiple accept=".srt,.vtt,text/vtt,text/plain">
+          <p id="batch-summary" class="muted small" aria-live="polite"></p>
         </div>
       </div>
 
@@ -104,6 +116,15 @@
         </div>
         <p class="muted small">A trilha <code>descriptions.vtt</code> é aceita por players que suportam <code>&lt;track kind="descriptions"&gt;</code>.</p>
       </section>
+    </section>
+
+    <section class="card prose" aria-labelledby="plans-title">
+      <h2 id="plans-title">Planos (Lista de Espera — Sem Cobrança Ativa)</h2>
+      <p class="muted small">Uso individual gratuito 100% no navegador. Os planos abaixo estão em pré-cadastro (sem pagamento ativo nesta versão):</p>
+      <ul>
+        <li><strong>Criador — R$ 49/mês:</strong> presets ANCINE e YouTube salvos e preparação rápida de séries de vídeos.</li>
+        <li><strong>Agência — R$ 129–149/mês:</strong> auditoria em lote multi-arquivos e relatórios padronizados para equipes.</li>
+      </ul>
     </section>
 
     <section class="card prose" aria-labelledby="help-title">

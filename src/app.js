@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  const state = { fileName: '', format: '', cues: [], audit: null, gaps: [], drafts: [], audioSilences: [] };
+  const state = { fileName: '', format: '', preset: 'standard', cues: [], audit: null, gaps: [], drafts: [], audioSilences: [] };
 
   const $ = (id) => document.getElementById(id);
   const fmt = (ms) => DescriptionStudio.formatClock(ms);
@@ -38,7 +38,7 @@ Ele explicou que o projeto precisava de mais tempo porque a equipe toda estava a
       state.fileName = fileName || 'colado';
       state.format = parsed.format;
       state.cues = parsed.cues;
-      state.audit = SubtitleAudit.audit(parsed.cues);
+      state.audit = SubtitleAudit.audit(parsed.cues, state.preset);
       state.gaps = SubtitleAudit.findGaps(parsed.cues);
       state.drafts = state.gaps.map(() => '');
       state.audioSilences = [];
@@ -273,6 +273,36 @@ Ele explicou que o projeto precisava de mais tempo porque a equipe toda estava a
 
   document.addEventListener('DOMContentLoaded', () => {
     bind();
+    const presetSelect = $('preset-select');
+    if (presetSelect) {
+      presetSelect.addEventListener('change', (e) => {
+        state.preset = e.target.value || 'standard';
+        if (state.cues.length) {
+          state.audit = SubtitleAudit.audit(state.cues, state.preset);
+          render();
+          setStatus(`Preset atualizado para ${SubtitleAudit.PRESETS[state.preset]?.label || state.preset}.`, 'ok');
+        }
+      });
+    }
+    const batchInput = $('batch-subtitles');
+    if (batchInput) {
+      batchInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        const summary = [];
+        for (const f of files) {
+          try {
+            const text = await f.text();
+            const parsed = SubtitleParser.parse(text);
+            const res = SubtitleAudit.audit(parsed.cues, state.preset);
+            summary.push(`${f.name}: ${res.stats.score}/100 (${parsed.cues.length} trechos)`);
+          } catch (_err) {
+            summary.push(`${f.name}: erro ao ler`);
+          }
+        }
+        $('batch-summary').textContent = `Lote (${files.length} arquivos): ` + summary.join(' | ');
+      });
+    }
     setStatus('Pronto. Nada é enviado para servidores: todo o processamento ocorre no seu navegador.', 'info');
   });
 })();

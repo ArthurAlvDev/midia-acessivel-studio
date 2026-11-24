@@ -93,7 +93,7 @@ A suíte usa `node:test`, sem dependências externas, com 52 testes distribuído
 | --- | --- | --- |
 | `parser.test.js` | formatos, timestamps, ordenação, BOM/CRLF, erros de entrada | 11 |
 | `audit.test.js` | CPS, CPL, linhas, duração, sobreposição, janelas, índice | 17 |
-| `descriptions.test.js` | trilha VTT, transcrição, relatório | 6 |
+| `descriptions.test.js` | trilha VTT, transcrição, relatório | 7 |
 | `audio.test.js` | silêncios sintéticos, limiar, bordas do sinal | 8 |
 | `page.test.js` | integridade da página: referências locais, rótulos, CSP, créditos | 9 |
 

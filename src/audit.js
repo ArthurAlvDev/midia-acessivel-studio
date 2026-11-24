@@ -17,6 +17,12 @@
     minGapMs: 3000, // janela mínima para audiodescrição
   };
 
+  const PRESETS = {
+    standard: { ...LIMITS, label: 'Padrão WCAG / EBU' },
+    ancine: { ...LIMITS, cpsError: 17, cpsWarn: 15, cplError: 42, cplWarn: 38, maxLines: 2, label: 'ANCINE (Cinema / TV)' },
+    youtube: { ...LIMITS, cpsError: 22, cpsWarn: 19, cplError: 42, cplWarn: 38, maxLines: 2, label: 'YouTube' },
+  };
+
   const RULES = {
     cps: { label: 'Velocidade de leitura (CPS)', ref: 'WCAG 1.2.2 / EBU R128' },
     cpl: { label: 'Comprimento de linha (CPL)', ref: 'Recomendação de legibilidade' },
@@ -31,7 +37,8 @@
     return String(text).replace(/\s+/g, ' ').replace(/<[^>]+>/g, '').trim().length;
   }
 
-  function auditCue(cue) {
+  function auditCue(cue, presetId = 'standard') {
+    const limits = PRESETS[presetId] || LIMITS;
     const issues = [];
     const text = String(cue.text || '');
     const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
@@ -46,48 +53,48 @@
 
     if (seconds > 0) {
       const cps = chars / seconds;
-      if (cps > LIMITS.cpsError) {
+      if (cps > limits.cpsError) {
         issues.push({
           cue: cue.index,
           rule: 'cps',
           severity: 'error',
-          message: `${cps.toFixed(1)} CPS acima do limite de ${LIMITS.cpsError}.`,
+          message: `${cps.toFixed(1)} CPS acima do limite de ${limits.cpsError}.`,
           suggestion: 'Divida o trecho ou aumente a duração.',
         });
-      } else if (cps > LIMITS.cpsWarn) {
+      } else if (cps > limits.cpsWarn) {
         issues.push({
           cue: cue.index,
           rule: 'cps',
           severity: 'warning',
-          message: `${cps.toFixed(1)} CPS acima do recomendado (${LIMITS.cpsWarn}).`,
+          message: `${cps.toFixed(1)} CPS acima do recomendado (${limits.cpsWarn}).`,
         });
       }
     }
 
     const longest = lines.reduce((max, l) => Math.max(max, plainLength(l)), 0);
-    if (longest > LIMITS.cplError) {
+    if (longest > limits.cplError) {
       issues.push({
         cue: cue.index,
         rule: 'cpl',
         severity: 'error',
-        message: `Linha com ${longest} caracteres (limite ${LIMITS.cplError}).`,
+        message: `Linha com ${longest} caracteres (limite ${limits.cplError}).`,
         suggestion: 'Quebre a linha em duas.',
       });
-    } else if (longest > LIMITS.cplWarn) {
+    } else if (longest > limits.cplWarn) {
       issues.push({
         cue: cue.index,
         rule: 'cpl',
         severity: 'warning',
-        message: `Linha com ${longest} caracteres (recomendado até ${LIMITS.cplWarn}).`,
+        message: `Linha com ${longest} caracteres (recomendado até ${limits.cplWarn}).`,
       });
     }
 
-    if (lines.length > LIMITS.maxLines) {
+    if (lines.length > limits.maxLines) {
       issues.push({
         cue: cue.index,
         rule: 'lines',
         severity: 'warning',
-        message: `${lines.length} linhas no mesmo trecho (máximo ${LIMITS.maxLines}).`,
+        message: `${lines.length} linhas no mesmo trecho (máximo ${limits.maxLines}).`,
       });
     }
 
@@ -127,9 +134,9 @@
     return issues;
   }
 
-  function audit(cues) {
+  function audit(cues, presetId = 'standard') {
     const perCue = [];
-    for (const cue of cues) perCue.push(...auditCue(cue));
+    for (const cue of cues) perCue.push(...auditCue(cue, presetId));
     const issues = perCue.concat(findOverlaps(cues));
 
     const bySeverity = { error: 0, warning: 0 };
@@ -174,5 +181,5 @@
     return gaps;
   }
 
-  return { audit, auditCue, findOverlaps, findGaps, plainLength, LIMITS, RULES };
+  return { audit, auditCue, findOverlaps, findGaps, plainLength, LIMITS, PRESETS, RULES };
 });

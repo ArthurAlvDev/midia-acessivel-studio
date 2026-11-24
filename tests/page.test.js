@@ -25,7 +25,7 @@ test('a página tem estrutura semântica e atalho de conteúdo', () => {
 test('todos os arquivos citados existem', () => {
   const refs = [...html.matchAll(/(?:href|src)="([^"#]+)"/g)]
     .map((m) => m[1])
-    .filter((r) => !/^https?:|^data:/.test(r));
+    .filter((r) => !/^https?:|^data:|^\/_vercel\//.test(r));
   assert.ok(refs.length >= 6, `esperava ao menos 6 referências locais, achei ${refs.length}`);
   for (const ref of refs) {
     assert.ok(fs.existsSync(path.join(root, ref)), `arquivo ausente: ${ref}`);
@@ -65,4 +65,16 @@ test('o exemplo .srt é válido para o parser', () => {
   const { cues, format } = parser.parse(fs.readFileSync(path.join(root, 'exemplo.srt'), 'utf8'));
   assert.equal(format, 'srt');
   assert.equal(cues.length, 6);
+});
+
+
+test('a página inclui Vercel Insights, presets ANCINE/YouTube, lote e planos sem cobrança ativa', () => {
+  assert.match(html, /\/_vercel\/insights\/script\.js/);
+  assert.match(html, /ANCINE/);
+  assert.match(html, /YouTube/);
+  assert.match(html, /id="batch-subtitles"/);
+  assert.match(html, /R\$ 49\/mês/);
+  assert.match(html, /129–149/);
+  const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+  assert.match(sitemap, /https:\/\/legenda\.olacdev\.com\//);
 });
